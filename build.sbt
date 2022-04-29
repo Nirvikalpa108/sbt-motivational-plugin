@@ -1,7 +1,7 @@
 lazy val root = (project in file("."))
   .settings(
     name := "motivation-plugin",
-    scalaVersion := "2.13.8",
+    scalaVersion := "2.12.15",
     version := "0.1.0-SNAPSHOT",
     organization := "com.github.Nirvikalpa108",
     sbtPlugin := true,
