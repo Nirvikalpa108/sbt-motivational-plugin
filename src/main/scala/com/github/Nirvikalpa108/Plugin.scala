@@ -38,7 +38,7 @@ object MotivationPlugin extends AutoPlugin {
   import sys.process.*
   override lazy val globalSettings: Seq[Setting[_]] = List(
     //voice := "Daniel", // voice is set to a default value in global settings
-    speak := { Process(s"testing").!!}
+    speak := { Process(s"say testing").!!}
 //    motivationalQuotes := MotivationalQuotes.quotes,
 //    voices := Voices.allVoices,
 //    speak := {
@@ -52,8 +52,8 @@ object MotivationPlugin extends AutoPlugin {
 //    },
   )
   override lazy val projectSettings: Seq[Setting[_]] = List(
-    Test / test := { // := is a re-wiring operator
-      val old = (Test / test).value // this makes the happens-before relationship to the original task
+    Test / executeTests := { // := is a re-wiring operator
+      val old = (Test / executeTests).value // this makes the happens-before relationship to the original task
       speak.value // happens before for the speak task
       old
     },
