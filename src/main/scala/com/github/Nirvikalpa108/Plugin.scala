@@ -1,10 +1,7 @@
 package com.github.Nirvikalpa108
 
-import sbt.Keys.{executeTests, test}
-import sbt.Opts.compile
+import sbt.Keys.executeTests
 import sbt.{AutoPlugin, Test, TestResult, *}
-
-import scala.util.Random
 
 object MotivationPlugin extends AutoPlugin {
   // this specifies the plugins that I need to depend on. Autoplugin puts the plugin dependency settings in the right
@@ -17,13 +14,13 @@ object MotivationPlugin extends AutoPlugin {
   object autoImport {
     //val motivationalQuotes: SettingKey[List[String]] = settingKey[List[String]]("a list of motivational quotes")
     //val voices: SettingKey[List[String]] = settingKey[List[String]]("a list of say voices")
-    val speak = taskKey[Unit]("says nice motivational things")
+   // val speak = taskKey[Unit]("says nice motivational things")
 //    val voice = settingKey[String]("configure the voice") // voice that the user can set per sub-project
-//    val speakTestPassed = taskKey[Unit]("say something nice when the tests pass")
-//    val speakTestFailed = taskKey[Unit]("say something motivational when the tests fail")
-//    val speakTestError = taskKey[Unit]("say something motivational when the tests error")
-//
-//    lazy val speakTest = taskKey[Unit]("run tests and say something nice :)")
+    val speakTestPassed = taskKey[Unit]("say something nice when the tests pass")
+    val speakTestFailed = taskKey[Unit]("say something motivational when the tests fail")
+    val speakTestError = taskKey[Unit]("say something motivational when the tests error")
+
+//   lazy val speakTest = taskKey[Unit]("run tests and say something nice :)")
 //    val speakTestOutcomeDynamic = Def.taskDyn {
 //      (Test / executeTests).value.overall match {
 //        case TestResult.Passed => Def.task(speakTestPassed.value)
@@ -31,14 +28,28 @@ object MotivationPlugin extends AutoPlugin {
 //        case TestResult.Error => Def.task(speakTestError.value)
 //      }
 //    }
+
+    val myTask = taskKey[Unit]("test")
+    val dynamic = Def.taskDyn {
+      // decide what to evaluate based on the value of Test / executeTests
+      if((Test / executeTests).value.overall == TestResult.Failed)
+      // this is only evaluated if the tests fail
+        Def.task {
+          speakTestFailed.value
+        }
+      else
+      // only evaluated if the tests do not fail (this is wrong, because of course they could error, but anyway!)
+        Def.task {
+          speakTestPassed.value
+        }
+    }
   }
 
   import autoImport.*
-
   import sys.process.*
   override lazy val globalSettings: Seq[Setting[_]] = List(
+
     //voice := "Daniel", // voice is set to a default value in global settings
-    speak := { Process(s"say testing").!!}
 //    motivationalQuotes := MotivationalQuotes.quotes,
 //    voices := Voices.allVoices,
 //    speak := {
@@ -52,11 +63,22 @@ object MotivationPlugin extends AutoPlugin {
 //    },
   )
   override lazy val projectSettings: Seq[Setting[_]] = List(
-    Test / executeTests := { // := is a re-wiring operator
-      val old = (Test / executeTests).value // this makes the happens-before relationship to the original task
-      speak.value // happens before for the speak task
-      old
-    },
+    // ok this is working now when I execute myTask in the sbt shell :) commit here :)
+    speakTestFailed := Process("say try again. You'll have better luck next time").!!,
+    speakTestPassed := Process("say well done, your tests passed").!!,
+
+    myTask := {
+      val output = dynamic.value
+      output
+    }
+//    speakTestError := Process("say oops something went wrong. You're still amazing though!").!!,
+//    speakTest := speakTestOutcomeDynamic.value,
+
+//    Test / executeTests := { // := is a re-wiring operator
+//      val old = (Test / executeTests).value // this makes the happens-before relationship to the original task
+//      speak.value // happens before for the speak task
+//      old
+//    },
     // setting the voice to the narrowest scoping within the tasks, so build users have max flexibility and can set per sub-project
 //    speakTestPassed := {
 //      val v = (speakTestPassed / voice).value
@@ -71,6 +93,5 @@ object MotivationPlugin extends AutoPlugin {
 //      Process(s"say -v $v oh no, there's been an error with your tests. Let's see what's wrong.").!!
 //    },
 //
-//    speakTest := speakTestOutcomeDynamic.value,
   )
 }
