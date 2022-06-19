@@ -17,5 +17,15 @@ object MotivationalQuotes {
     "You don't have to know it all now. Learning is part of the fun",
     "The reality is now",
     "We are nothing but the stories we tell ourselves",
+    "You have everything you need inside of you",
+    "Be your own best friend. What would she say?",
+    "Celebrate yourself. What have you learnt today? In the last year? In the last three years?",
+    "Our life experience is dominated by the words we tell ourselves. Be kind."
+  )
+
+  val testFailureQuotes = List(
+    "fantastic, the tests have failed!",
+    "you're getting closer",
+    "keep going, you're doing great",
   )
 }
