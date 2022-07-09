@@ -36,24 +36,16 @@ object MotivationPlugin extends AutoPlugin {
     voice := "Daniel", // voice is set to a default value in global settings
   )
   override lazy val projectSettings: Seq[Setting[_]] = List(
-    //setting the voice to the narrowest scoping within the tasks, so build users have max flexibility and can set per sub-project
-    speakTestPassed := {
-      val v = (speakTestPassed / voice).value
-      Process(s"say -v $v well done, your tests passed").!!
-    },
-    speakTestFailed := {
-      val v = (speakTestFailed / voice).value
-      Process(s"say -v $v try again, better luck next time").!!
-    },
-    speakTestError := {
-      val v = (speakTestError / voice).value
-      Process(s"say -v $v oh no, there's been an error with your tests. Let's see what's wrong.").!!
-    },
-
+    //setting the voice to the narrowest scoping within the tasks,
+    //so build users have max flexibility and can set per sub-project
+    speakTestPassed := Process(s"say -v ${getVoice(speakTestPassed).value} well done, your tests passed").!!,
+    speakTestFailed := Process(s"say -v ${getVoice(speakTestFailed).value} try again, better luck next time").!!,
+    speakTestError := Process(s"say -v ${getVoice(speakTestError).value} oh no, there's been an error with your tests. Let's see what's wrong.").!!,
     // execute speak in the sbt shell to see this working
     speak := {
       val output = speakTestOutcomeDynamic.value
       output
     }
   )
+    def getVoice(t: TaskKey[Unit]): SettingKey[String] = t / voice
 }
