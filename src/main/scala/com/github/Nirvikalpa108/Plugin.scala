@@ -1,5 +1,6 @@
 package com.github.Nirvikalpa108
 
+import com.github.Nirvikalpa108.Motivation.{queueSay, say}
 import sbt.Keys.{executeTests, test}
 import sbt.{AutoPlugin, Test, TestResult, *}
 
@@ -28,27 +29,25 @@ object MotivationPlugin extends AutoPlugin {
   }
 
   import autoImport.*
-  import sys.process.*
   override lazy val globalSettings: Seq[Setting[_]] = List(
     voice := "Daniel", // voice is set to a default value in global settings
   )
   override lazy val projectSettings: Seq[Setting[_]] = List(
     //setting the voice to the narrowest scoping within the tasks,
     //so build users have max flexibility and can set per sub-project
-    speakTestPassed := Process(s"say -v ${getVoice(speakTestPassed).value} well done.").!!,
-    speakTestFailed := Process(s"say -v ${getVoice(speakTestFailed).value} better luck next time").!!,
-    speakTestError := Process(s"say -v ${getVoice(speakTestError).value} there's been an error with your tests.").!!,
+    speakTestPassed := queueSay((speakTestPassed / voice).value,"well done"),
+    speakTestFailed := queueSay((speakTestFailed / voice).value,"better luck next time"),
+    speakTestError := queueSay((speakTestError / voice).value,"there's been an error with your tests."),
     // execute speak in the sbt shell to see this working
     speak := {
       val output = speakTestOutcomeDynamic.value
       output
     },
-  (Test / test) := {
-    val old = (Test / test).value
-    speak.value
-    old
-  }
+    // modified test task to now include speak
+    (Test / test) := {
+      val old = (Test / test).value
+      speak.value
+      old
+    }
   )
-  def getVoice(t: TaskKey[Unit]): SettingKey[String] = t / voice
-  def say(voice: String): Unit = Process(s"say -v $voice testing testing one two three").!!
 }
