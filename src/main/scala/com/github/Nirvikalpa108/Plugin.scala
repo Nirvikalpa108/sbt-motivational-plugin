@@ -12,15 +12,12 @@ object MotivationPlugin extends AutoPlugin {
   override def trigger = allRequirements
 
   object autoImport {
-    //val motivationalQuotes: SettingKey[List[String]] = settingKey[List[String]]("a list of motivational quotes")
-    //val voices: SettingKey[List[String]] = settingKey[List[String]]("a list of say voices")
     val speak = taskKey[Unit]("says nice motivational things")
     val voice = settingKey[String]("configure the voice") // voice that the user can set per sub-project
     val speakTestPassed = taskKey[Unit]("say something nice when the tests pass")
     val speakTestFailed = taskKey[Unit]("say something motivational when the tests fail")
     val speakTestError = taskKey[Unit]("say something motivational when the tests error")
 
-   //lazy val speakTest = taskKey[Unit]("run tests and say something nice :)")
     val speakTestOutcomeDynamic = Def.taskDyn {
       (Test / executeTests).value.overall match {
         case TestResult.Passed => Def.task(speakTestPassed.value)
@@ -38,14 +35,15 @@ object MotivationPlugin extends AutoPlugin {
   override lazy val projectSettings: Seq[Setting[_]] = List(
     //setting the voice to the narrowest scoping within the tasks,
     //so build users have max flexibility and can set per sub-project
-    speakTestPassed := Process(s"say -v ${getVoice(speakTestPassed).value} well done, your tests passed").!!,
-    speakTestFailed := Process(s"say -v ${getVoice(speakTestFailed).value} try again, better luck next time").!!,
-    speakTestError := Process(s"say -v ${getVoice(speakTestError).value} oh no, there's been an error with your tests. Let's see what's wrong.").!!,
+    speakTestPassed := Process(s"say -v ${getVoice(speakTestPassed).value} well done.").!!,
+    speakTestFailed := Process(s"say -v ${getVoice(speakTestFailed).value} better luck next time").!!,
+    speakTestError := Process(s"say -v ${getVoice(speakTestError).value} there's been an error with your tests.").!!,
     // execute speak in the sbt shell to see this working
     speak := {
       val output = speakTestOutcomeDynamic.value
       output
     }
   )
-    def getVoice(t: TaskKey[Unit]): SettingKey[String] = t / voice
+  def getVoice(t: TaskKey[Unit]): SettingKey[String] = t / voice
+  def say(voice: String): Unit = Process(s"say -v $voice testing testing one two three").!!
 }
