@@ -1,6 +1,6 @@
 package com.github.Nirvikalpa108
 
-import sbt.Keys.executeTests
+import sbt.Keys.{executeTests, test}
 import sbt.{AutoPlugin, Test, TestResult, *}
 
 object MotivationPlugin extends AutoPlugin {
@@ -42,7 +42,12 @@ object MotivationPlugin extends AutoPlugin {
     speak := {
       val output = speakTestOutcomeDynamic.value
       output
-    }
+    },
+  (Test / test) := {
+    val old = (Test / test).value
+    speak.value
+    old
+  }
   )
   def getVoice(t: TaskKey[Unit]): SettingKey[String] = t / voice
   def say(voice: String): Unit = Process(s"say -v $voice testing testing one two three").!!
